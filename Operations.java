@@ -14,7 +14,7 @@ public class Operations {
   public Operations(JLabel imageLabel) {
     this.imageLabel = imageLabel;
   }
-  public void openImage(){
+  public void newBtn(){
     JFileChooser fileChooser = new JFileChooser();
     fileChooser.setDialogTitle("Open Image File");
     fileChooser.setAcceptAllFileFilterUsed(false);
@@ -31,15 +31,15 @@ public class Operations {
         }
   }
 
-  public void trainImage(){
+  public void trainBtn(){
 
   }
 
-  public void compressImage(){
+  public void compressBtn(){
 
   }
 
-  public void showCompressedImage(){
+  public void openBtn(){
 
   }
 

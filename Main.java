@@ -1,10 +1,11 @@
 public class Main {
   public static void main(String[] args) {
-      // Create and launch the GUI
-      javax.swing.SwingUtilities.invokeLater(() -> {
-          new GUI2().createAndShowGUI2();
-          //new GUI().createAndShowGUI();
-      });
+      // Initialize Opertaions and GUI classes
+      ButtonOperations buttonOperations = new ButtonOperations();
+      GUI2 gui2 = new GUI2(buttonOperations);
+      // Create GUI
+      gui2.createAndShowGUI2();
+      System.out.println("GUI CREATED");
   }
 }
           

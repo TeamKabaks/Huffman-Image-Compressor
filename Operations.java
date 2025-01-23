@@ -20,7 +20,6 @@ public class Operations {
     fileChooser.setAcceptAllFileFilterUsed(false);
     FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files", "jpg", "png", "gif", "bmp");
     fileChooser.addChoosableFileFilter(filter);
-
         int result = fileChooser.showOpenDialog(null);
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
@@ -50,6 +49,7 @@ public class Operations {
             imageLabel.setIcon(imageIcon);
             imageLabel.revalidate();
             imageLabel.repaint();
+            System.out.println("Sumulod here");
         } catch (IOException e) {
             e.printStackTrace();
         }

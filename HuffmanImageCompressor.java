@@ -1,5 +1,3 @@
-package huffmancoding;
-
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

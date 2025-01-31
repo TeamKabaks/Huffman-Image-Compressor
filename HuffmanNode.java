@@ -1,15 +1,23 @@
-public class HuffmanNode implements Comparable<HuffmanNode> {
-    public int frequency;
-    public int pixel;
-    public HuffmanNode left, right;
+import java.io.Serializable;
 
-    public HuffmanNode(int frequency, int pixel) {
+public class HuffmanNode implements Comparable<HuffmanNode>, Serializable {
+    int pixel;
+    double frequency;
+    HuffmanNode left;
+    HuffmanNode right;
+    
+    public HuffmanNode(int value, double frequency) {
+        this.pixel = value;
         this.frequency = frequency;
-        this.pixel = pixel;
-        left = right = null;
     }
 
+    public boolean isLeaf() {
+        return left == null && right == null;
+    }
+
+    // This compares the nodes which is helpful in Priority Queue to automatically sort nodes
+    @Override
     public int compareTo(HuffmanNode other) {
-        return frequency - other.frequency;
+        return Double.compare(this.frequency, other.frequency);
     }
 }

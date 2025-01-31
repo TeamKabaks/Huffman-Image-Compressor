@@ -24,7 +24,7 @@ public class HuffmanCoding {
     private Map<Character, Integer> frequencyMap = new HashMap<>();
     private Map<Character, String> huffmanCodes = new HashMap<>();
 
-    // Build the Huffman Tree
+    // Build the Huffman Treea
     public Node buildTree(Map<Character, Integer> frequencyMap) {
         PriorityQueue<Node> queue = new PriorityQueue<>();
 

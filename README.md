@@ -72,6 +72,11 @@ Huffman Coding is a method of compressing data by creating a binary tree of node
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
+1. Fork the repository
+2. Create your feature branch ('''git checkout -b feature/AmazingFeature''')
+3. Commit your changes ('''git commit -m 'Add some AmazingFeature'''')
+4. Push to the branch ('''git push origin feature/AmazingFeature''')
+5. Open a Pull Request 
 
 ## License
 
@@ -79,6 +84,8 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Acknowledgments
 
+- This project was created as a part of CMSC 123 at University of the Philippines Tacloban College.
+- Based on Huffman coding algorithm for efficient data compression.
 - Huffman, D. A. (1952). "A Method for the Construction of Minimum-Redundancy Codes". Proceedings of the IRE.
 
 ---

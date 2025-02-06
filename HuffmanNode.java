@@ -1,13 +1,11 @@
-import java.io.Serializable;
-
-public class HuffmanNode implements Comparable<HuffmanNode>, Serializable {
-    int pixel;
+public class HuffmanNode implements Comparable<HuffmanNode> {
+    int value;
     double frequency;
     HuffmanNode left;
     HuffmanNode right;
     
     public HuffmanNode(int value, double frequency) {
-        this.pixel = value;
+        this.value = value;
         this.frequency = frequency;
     }
 

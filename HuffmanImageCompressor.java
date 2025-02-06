@@ -5,23 +5,8 @@ import javax.imageio.ImageIO;
 
 public class HuffmanImageCompressor {
 
-    private static class HuffmanNode implements Comparable<HuffmanNode> {
-        int value;
-        double frequency;
-        HuffmanNode left, right;
-
-        public HuffmanNode(int value, double frequency) {
-            this.value = value;
-            this.frequency = frequency;
-        }
-
-        @Override
-        public int compareTo(HuffmanNode other) {
-            return Double.compare(this.frequency, other.frequency);
-        }
-    }
-
     public void compressImage(String inputPath, String outputCompressed, String treeFile) throws IOException {
+        
         BufferedImage image = ImageIO.read(new File(inputPath));
         if (image == null) {
             throw new IOException("Unsupported image format or invalid file.");

@@ -5,16 +5,28 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class ButtonOperations implements ActionListener {
+    private String fileName;
     private JFrame mainFrame;
     private final HuffmanImageCompressor huff;
     private JButton newBtn, trainBtn, compressBtn, openBtn;
     public JLabel imageLabelUncompressed, imageLabelCompressed, uncompressedFileSizeLabel, compressedFileSizeLabel;
-    public File selectedFile, selectedFolder;
+    public File selectedFile, selectedFolder, innputDir, huffDir, compresseedDir, outputDir;
+    private String basePath = new File("").getAbsolutePath() + File.separator + "assets" + File.separator;
+    private String inputFilePath = basePath + "inputs";
+    private String huffTreeFilePath = basePath + "huff_files";
+    private String compressedFilePath = basePath + "compressed_files";
+    private String outputFilePath = basePath + "outputs";
+
 
     public ButtonOperations() {
         imageLabelUncompressed = new JLabel();
@@ -41,7 +53,10 @@ public class ButtonOperations implements ActionListener {
     }
     
     public void newBtnPressed() {
+        String fileName;
         JFileChooser fileChooser = new JFileChooser();
+        System.out.println(inputFilePath);
+        fileChooser.setCurrentDirectory(new File(inputFilePath));
         fileChooser.setDialogTitle("Open Image File");
         fileChooser.setAcceptAllFileFilterUsed(false);
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files",  "tiff", "png", "gif", "bmp");
@@ -58,6 +73,10 @@ public class ButtonOperations implements ActionListener {
             JOptionPane.showMessageDialog(mainFrame, "Open Cancelled");
         }
 
+        // moves selected file to the input folder
+        moveFile(selectedFile.getAbsolutePath(), inputFilePath);
+        fileName = selectedFile.getName();
+        selectedFile = new File(inputFilePath + "/" + fileName);
         clearImage(2);
         clearLabelFileSize(2);
     }
@@ -73,27 +92,26 @@ public class ButtonOperations implements ActionListener {
             JOptionPane.showMessageDialog(mainFrame, "Please select an image file first.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        JFileChooser folderChooser = new JFileChooser();
-        folderChooser.setDialogTitle("Select Folder to Save Huffman Tree");
-        folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-        int choice = folderChooser.showSaveDialog(null);
-        if (choice == JFileChooser.APPROVE_OPTION) {
-            selectedFolder = folderChooser.getSelectedFile();
-            String huffmanTreePath = selectedFolder.getAbsolutePath() + "/huffman_tree.huff";
-            try {
-                huff.compressImage(selectedFile.getAbsolutePath(), huffmanTreePath, huffmanTreePath);
-                JOptionPane.showMessageDialog(mainFrame, "Huffman tree created and saved to: " + huffmanTreePath);
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(mainFrame, "Error during training: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(mainFrame, "No folder selected for saving Huffman tree.");
+        selectedFolder = new File(huffTreeFilePath);
+        try {
+            fileName = getFileNameWithoutExtension(selectedFile.getName());
+            String input = inputFilePath + "/" + selectedFile.getName();
+            String huffmanTreePath = huffTreeFilePath + "/" + fileName.trim() + ".huff";
+            huff.compressImage(input, huffmanTreePath, huffmanTreePath);
+            JOptionPane.showMessageDialog(mainFrame, "Huffman tree created and saved to: " + huffmanTreePath);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(mainFrame, "Error during training: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-   
+    private static String getFileNameWithoutExtension(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf(".");
+        
+        if (lastDotIndex > 0) { // Ensures the dot is not at the start (e.g., ".hiddenfile")
+            return fileName.substring(0, lastDotIndex);
+        }
+        return fileName; // No extension found, return the original name
+    }
 
     public void compressBtnPressed() {
         if (selectedFile == null || selectedFolder == null) {
@@ -103,6 +121,7 @@ public class ButtonOperations implements ActionListener {
     
         // Prompt the user to select a Huffman file
         JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(huffTreeFilePath));
         fileChooser.setDialogTitle("Choose a Huffman File");
         fileChooser.setAcceptAllFileFilterUsed(false);
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Huffman Files", "huff");
@@ -116,19 +135,20 @@ public class ButtonOperations implements ActionListener {
     
         File huffmanFile = fileChooser.getSelectedFile();
         String huffmanTreePath = huffmanFile.getAbsolutePath(); // Use the selected file instead of auto-generating the path
-        String compressedFilePath = selectedFolder.getAbsolutePath() + "/compressed_image.kabak";
-    
+        
+        String compressedPath = compressedFilePath + "/" + fileName.trim() + ".kabak";
+
         try {
-            huff.compressImage(selectedFile.getAbsolutePath(), compressedFilePath, huffmanTreePath);
-            JOptionPane.showMessageDialog(mainFrame, "Image compressed and saved to: " + compressedFilePath);
+            huff.compressImage(selectedFile.getAbsolutePath(), compressedPath, huffmanTreePath);
+            JOptionPane.showMessageDialog(mainFrame, "Image compressed and saved to: " + compressedPath);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(mainFrame, "Error during compression: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
-    
     public void openBtnPressed() {
         JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(compressedFilePath));
         fileChooser.setDialogTitle("Open Compressed Image File");
         fileChooser.setAcceptAllFileFilterUsed(false);
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Compressed Files", "kabak");
@@ -137,14 +157,33 @@ public class ButtonOperations implements ActionListener {
         int result = fileChooser.showOpenDialog(null);
         if (result == JFileChooser.APPROVE_OPTION) {
             File compressedFile = fileChooser.getSelectedFile();
-            String huffmanTreePath = compressedFile.getParent() + "/huffman_tree.huff";
+            File inputDirectory = new File(inputFilePath);
+            System.out.println(compressedFile.getName());
+            String fileName = compressedFile.getName().replace(".kabak", "");
+            String huffmanTreePath = huffTreeFilePath + "/" + fileName + ".huff";
+            String compressedTreePath = compressedFilePath + "/" + fileName + ".kabak";
             String outputImagePath;
+            String inputFileName, inputPath = "";
+
+            // Getting the corresponding input file
+            if (inputDirectory.exists() && inputDirectory.isDirectory()){   
+                File files[] = inputDirectory.listFiles();
+                if (files != null){
+                    for (File file : files){
+                        inputFileName = file.getName();
+                        if (inputFileName.startsWith(fileName + ".")){
+                            selectedFile = file;
+                            inputPath = inputFilePath + "/" + inputFileName;
+                        }
+                    }
+                }
+            }            
+
             String fileFormat = getFileExtension(selectedFile);
-              
             if (fileFormat.equalsIgnoreCase("tiff")) {
-                outputImagePath = compressedFile.getParent() + "/decompressed_image.tiff";
+                outputImagePath = outputFilePath + "/" + fileName + ".tiff";
             }else if(fileFormat.equalsIgnoreCase("bmp")){
-                outputImagePath = compressedFile.getParent() + "/decompressed_image.bmp";
+                outputImagePath = outputFilePath + "/" + fileName + ".bmp";
             }else {
                 // Handle unsupported file format, for example:
                 JOptionPane.showMessageDialog(mainFrame, "Unsupported file format: " + fileFormat, "Error", JOptionPane.ERROR_MESSAGE);
@@ -152,7 +191,9 @@ public class ButtonOperations implements ActionListener {
             }
 
             try {
-                huff.decompressImage(compressedFile.getAbsolutePath(), huffmanTreePath, outputImagePath);
+                huff.decompressImage(compressedTreePath, huffmanTreePath, outputImagePath);
+                renderImage(new File(inputPath), 1);                
+                labelFileSize(new File(inputPath), 1);
                 renderImage(new File(outputImagePath), 2);
                 labelFileSize(new File(outputImagePath), 2);
                 JOptionPane.showMessageDialog(mainFrame, "Decompressed image saved to: " + outputImagePath);
@@ -202,6 +243,26 @@ public class ButtonOperations implements ActionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    // moves files that are not originally in the inputs folder
+    private static void moveFile(String sourcePath, String destinationFolder) {
+        Path source = Paths.get(sourcePath);
+        Path destination = Paths.get(destinationFolder, source.getFileName().toString());
+
+        // Check if file already exists in destination
+        if (Files.exists(destination)) {
+            System.out.println("File already exists in the inputs folder. No action taken.");
+            return;
+        }
+
+        try {
+            Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("File moved successfully to: " + destination);
+        } catch (IOException e) {
+            System.out.println("Failed to move file: " + e.getMessage());
+        }
+
     }
 
     private void clearImage(int panelType) {

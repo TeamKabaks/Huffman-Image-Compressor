@@ -13,7 +13,7 @@ public class ButtonOperations implements ActionListener {
     private JFrame mainFrame;
     private final HuffmanImageCompressor huff;
     private JButton newBtn, trainBtn, compressBtn, openBtn;
-    public JLabel imageLabelUncompressed, imageLabelCompressed, uncompressedFileSizeLabel, compressedFileSizeLabel;
+    public JLabel imageLabelUncompressed, imageLabelCompressed, uncompressedFileSizeLabel, compressedFileSizeLabel, statusLabel;
     public File selectedFile, selectedFolder;
 
     public ButtonOperations() {
@@ -21,6 +21,7 @@ public class ButtonOperations implements ActionListener {
         imageLabelCompressed = new JLabel();
         uncompressedFileSizeLabel = new JLabel();
         compressedFileSizeLabel = new JLabel();
+        statusLabel = new JLabel("Status |");
         this.huff = new HuffmanImageCompressor();
         initializeButtons();
         addButtonListeners();
@@ -47,17 +48,20 @@ public class ButtonOperations implements ActionListener {
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files",  "tiff", "png", "gif", "bmp");
         fileChooser.addChoosableFileFilter(filter);
 
+        setStatus("Choosing new image...");
         int result = fileChooser.showOpenDialog(null);
         if (result == JFileChooser.APPROVE_OPTION) {
             selectedFile = fileChooser.getSelectedFile();
+            setStatus("File selected");
             JOptionPane.showMessageDialog(mainFrame, "Selected file: " + selectedFile.getAbsolutePath());
             renderImage(selectedFile, 1);
             labelFileSize(selectedFile, 1);
-            System.out.println("File Size: " + selectedFile.length());
         } else {
+            setStatus("Choosing new image cancelled");
             JOptionPane.showMessageDialog(mainFrame, "Open Cancelled");
         }
 
+        clearStatus();
         clearImage(2);
         clearLabelFileSize(2);
     }
@@ -70,7 +74,9 @@ public class ButtonOperations implements ActionListener {
 
     public void trainBtnPressed() {
         if (selectedFile == null) {
+            setStatus("Error no selected image");
             JOptionPane.showMessageDialog(mainFrame, "Please select an image file first.", "Error", JOptionPane.ERROR_MESSAGE);
+            clearStatus();
             return;
         }
 
@@ -78,26 +84,34 @@ public class ButtonOperations implements ActionListener {
         folderChooser.setDialogTitle("Select Folder to Save Huffman Tree");
         folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
+        setStatus("Choosing file location...");
         int choice = folderChooser.showSaveDialog(null);
         if (choice == JFileChooser.APPROVE_OPTION) {
             selectedFolder = folderChooser.getSelectedFile();
             String huffmanTreePath = selectedFolder.getAbsolutePath() + "/huffman_tree.huff";
             try {
+                setStatus("Creating Huffman tree...");
                 huff.compressImage(selectedFile.getAbsolutePath(), huffmanTreePath, huffmanTreePath);
+                setStatus("Huffman tree created");
                 JOptionPane.showMessageDialog(mainFrame, "Huffman tree created and saved to: " + huffmanTreePath);
             } catch (IOException ex) {
+                setStatus("Error during training");
                 JOptionPane.showMessageDialog(mainFrame, "Error during training: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
+            setStatus("No folder selected");
             JOptionPane.showMessageDialog(mainFrame, "No folder selected for saving Huffman tree.");
         }
+        clearStatus();
     }
 
    
 
     public void compressBtnPressed() {
         if (selectedFile == null || selectedFolder == null) {
+            setStatus("Error no selected image");
             JOptionPane.showMessageDialog(mainFrame, "Please select an image file and output folder first.", "Error", JOptionPane.ERROR_MESSAGE);
+            clearStatus();
             return;
         }
     
@@ -107,9 +121,11 @@ public class ButtonOperations implements ActionListener {
         fileChooser.setAcceptAllFileFilterUsed(false);
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Huffman Files", "huff");
         fileChooser.addChoosableFileFilter(filter);
-    
+        
+        setStatus("Choosing huffman file...");
         int result = fileChooser.showOpenDialog(mainFrame);
         if (result != JFileChooser.APPROVE_OPTION) {
+            setStatus("Choosing huffman file cancelled");
             JOptionPane.showMessageDialog(mainFrame, "Huffman file selection cancelled.", "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -120,10 +136,13 @@ public class ButtonOperations implements ActionListener {
     
         try {
             huff.compressImage(selectedFile.getAbsolutePath(), compressedFilePath, huffmanTreePath);
+            setStatus("Image compressed and saved");
             JOptionPane.showMessageDialog(mainFrame, "Image compressed and saved to: " + compressedFilePath);
         } catch (IOException ex) {
+            setStatus("Error compressing image");
             JOptionPane.showMessageDialog(mainFrame, "Error during compression: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+        clearStatus();
     }
     
     
@@ -134,39 +153,48 @@ public class ButtonOperations implements ActionListener {
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Compressed Files", "kabak");
         fileChooser.addChoosableFileFilter(filter);
 
+        setStatus("Choosing compressed image...");
         int result = fileChooser.showOpenDialog(null);
         if (result == JFileChooser.APPROVE_OPTION) {
+            setStatus("File selected");
             File compressedFile = fileChooser.getSelectedFile();
             String huffmanTreePath = compressedFile.getParent() + "/huffman_tree.huff";
             String outputImagePath;
             String fileFormat = getFileExtension(selectedFile);
-              
+            
             if (fileFormat.equalsIgnoreCase("tiff")) {
                 outputImagePath = compressedFile.getParent() + "/decompressed_image.tiff";
             }else if(fileFormat.equalsIgnoreCase("bmp")){
                 outputImagePath = compressedFile.getParent() + "/decompressed_image.bmp";
             }else {
                 // Handle unsupported file format, for example:
+                setStatus("Unsupported file format");
                 JOptionPane.showMessageDialog(mainFrame, "Unsupported file format: " + fileFormat, "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
+            
             try {
+                setStatus("Decompressing image...");
                 huff.decompressImage(compressedFile.getAbsolutePath(), huffmanTreePath, outputImagePath);
                 renderImage(new File(outputImagePath), 2);
                 labelFileSize(new File(outputImagePath), 2);
+                setStatus("Decompressed image");
                 JOptionPane.showMessageDialog(mainFrame, "Decompressed image saved to: " + outputImagePath);
             } catch (IOException | ClassNotFoundException ex) {
+                setStatus("Error decompressing image");
                 JOptionPane.showMessageDialog(mainFrame, "Error during decompression: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
+            setStatus("Choosing image cancelled");
             JOptionPane.showMessageDialog(mainFrame, "Open Cancelled");
         }
+        clearStatus();
     }
     
     private void renderImage(File imageFile, int panelType) {
+        setStatus("Rendering image...");
         int imagePanelHeight = 811;
-        int imagePanelWidth = 607;
+        int imagePanelWidth = 597;
         int imageHeight, imageWidth;
         try {
             BufferedImage image = ImageIO.read(imageFile);
@@ -219,6 +247,8 @@ public class ButtonOperations implements ActionListener {
     }
 
     public void labelFileSize(File file, int imageType) {
+        String fileFormat = getFileExtension(selectedFile);
+        fileFormat = fileFormat.toUpperCase();
         long bytes = file.length();
         final String[] units = {"B", "KB", "MB", "GB", "TB", "PB"};
         int unitIndex = 0;
@@ -229,9 +259,9 @@ public class ButtonOperations implements ActionListener {
         }
         String fileSizeLabel = String.format("%.2f %s", size, units[unitIndex]);
         if (imageType == 1) {
-            uncompressedFileSizeLabel.setText(fileSizeLabel);
+            uncompressedFileSizeLabel.setText(fileSizeLabel + " (" + fileFormat + ")");
         } else if (imageType == 2) {
-            compressedFileSizeLabel.setText(fileSizeLabel);
+            compressedFileSizeLabel.setText(fileSizeLabel + " (" + fileFormat + ")");
         }
     }
 
@@ -244,6 +274,14 @@ public class ButtonOperations implements ActionListener {
             System.err.println("Unknown panel type: " + panelType);
         }
     }
+
+    private void setStatus(String statusString){
+        statusLabel.setText("Status | " + statusString);
+    }
+
+    private void clearStatus(){
+        statusLabel.setText("Status | ");
+    } 
     
     @Override
     public void actionPerformed(ActionEvent e) {

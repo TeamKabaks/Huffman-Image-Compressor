@@ -1,4 +1,3 @@
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -6,11 +5,13 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.*;
 
 public class GUI{
     private JPanel mainPanel, imagePanel, buttonPanel, buttonContainerPanel;
-    private JLabel uncompressedFileSizeLabel, compressedFileSizeLabel, imageLabelCompressed, imageLabelUncompressed;
+    private JLabel uncompressedFileSizeLabel, compressedFileSizeLabel, imageLabelCompressed, imageLabelUncompressed, statusLabel;
     private JButton newBtn, trainBtn, compressBtn, openBtn;
     private ButtonOperations buttonOperations;
     private JFrame mainFrame;
@@ -21,6 +22,7 @@ public class GUI{
         this.imageLabelCompressed = buttonOperations.imageLabelCompressed;
         this.uncompressedFileSizeLabel = buttonOperations.uncompressedFileSizeLabel;
         this.compressedFileSizeLabel = buttonOperations.compressedFileSizeLabel;
+        this.statusLabel = buttonOperations.statusLabel;
         this.newBtn = buttonOperations.getNewBtn();
         this.trainBtn = buttonOperations.getTrainBtn();
         this.compressBtn = buttonOperations.getCompressBtn();
@@ -28,7 +30,6 @@ public class GUI{
     }
 
     public void createAndShowGUI(){
-        // (Used methods to organize)
         createMainFrame();
         createImagePanel();
         createButtonPanel();
@@ -56,7 +57,7 @@ public class GUI{
         gbcPanels.gridy = 1;
         gbcPanels.weightx = 0.9; // 90% of the main panel width
         mainPanel.add(imagePanel, gbcPanels);
-        
+
         // Add buttonPanel to mainPanel
         gbcPanels.fill = GridBagConstraints.BOTH;
         gbcPanels.weighty = 1.0;
@@ -74,7 +75,7 @@ public class GUI{
         imagePanel.setPreferredSize(new Dimension(500, 500));
         imagePanel.setBackground(new Color(30, 31, 34));
         imagePanel.setBorder(BorderFactory.createLineBorder(new Color(49, 51, 56), 15));
-        imagePanel.setLayout(new GridBagLayout());
+        imagePanel.setLayout(new BorderLayout());
 
         JPanel uncompressedImgPanel = new JPanel();
         JPanel compressedImgPanel = new JPanel();
@@ -101,17 +102,39 @@ public class GUI{
         uncompressedImgPanel.add(uncompressedFileSizeLabel, gbcSubImagePanels);
         compressedImgPanel.add(compressedFileSizeLabel, gbcSubImagePanels);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridx = 0;
-        gbc.ipadx = 0;
-        imagePanel.add(uncompressedImgPanel, gbc);
-        gbc.gridx = 1;
-        gbc.ipadx = 0;
-        imagePanel.add(paddingPanel, gbc);
-        gbc.gridx = 2;
-        gbc.ipadx = 0;
-        imagePanel.add(compressedImgPanel, gbc);
+        JPanel imagePanelContainer = new JPanel();
+        imagePanelContainer.setOpaque(false);
+        GridBagConstraints gbcImagePanelContainer = new GridBagConstraints();
+    
+        gbcImagePanelContainer.fill = GridBagConstraints.BOTH;
+        gbcImagePanelContainer.gridx = 0;
+        gbcImagePanelContainer.ipadx = 0;
+        imagePanelContainer.add(uncompressedImgPanel, gbcImagePanelContainer);
+        gbcImagePanelContainer.gridx = 1;
+        gbcImagePanelContainer.ipadx = 0;
+        imagePanelContainer.add(paddingPanel, gbcImagePanelContainer);
+        gbcImagePanelContainer.gridx = 2;
+        gbcImagePanelContainer.ipadx = 0;
+        imagePanelContainer.add(compressedImgPanel, gbcImagePanelContainer);
+
+        statusLabel.setForeground(Color.white);
+        statusLabel.setFont(new Font("SansSerif", Font.BOLD,16));
+
+        JPanel statusPanel = new JPanel();
+        statusPanel.setBackground(new Color(40, 42, 47));
+        statusPanel.setLayout(new BorderLayout());
+        statusPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        statusPanel.add(statusLabel, BorderLayout.WEST);
+
+        JPanel displayPadPanel = new JPanel();
+        displayPadPanel.setBackground(Color.BLUE);
+        displayPadPanel.setLayout(new GridBagLayout());
+        displayPadPanel.setOpaque(false);
+        displayPadPanel.add(imagePanelContainer);
+
+        imagePanel.add(statusPanel, BorderLayout.SOUTH);
+        imagePanel.add(displayPadPanel, BorderLayout.CENTER);
+         
     }
 
     public final void createButtonPanel(){
@@ -137,14 +160,13 @@ public class GUI{
     }
 
     public final void designButtons(){
-
         Dimension buttonSize = new Dimension(200, 70);
         newBtn.setPreferredSize(new Dimension(buttonSize));
         trainBtn.setPreferredSize(new Dimension(buttonSize));
         compressBtn.setPreferredSize(new Dimension(buttonSize));
         openBtn.setPreferredSize(new Dimension(buttonSize));
 
-        Color buttonColor = new  Color(200, 200, 200);
+        Color buttonColor = new  Color(170, 170, 170);
         newBtn.setBackground(buttonColor);
         trainBtn.setBackground(buttonColor);
         compressBtn.setBackground(buttonColor);
@@ -159,5 +181,23 @@ public class GUI{
         trainBtn.setFocusPainted(false);
         compressBtn.setFocusPainted(false);
         openBtn.setFocusPainted(false);
+
+        addGUIButtonListeners(newBtn);
+        addGUIButtonListeners(trainBtn);
+        addGUIButtonListeners(compressBtn);
+        addGUIButtonListeners(openBtn);
+    }
+
+    private void addGUIButtonListeners(JButton button){
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(new  Color(250, 250, 250));
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(new  Color(170, 170, 170));
+            }
+        });
     }
 }

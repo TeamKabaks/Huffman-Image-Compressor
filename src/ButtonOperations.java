@@ -21,7 +21,7 @@ public class ButtonOperations implements ActionListener {
     private JButton newBtn, trainBtn, compressBtn, openBtn;
     public JLabel imageLabelUncompressed, imageLabelCompressed, uncompressedFileSizeLabel, compressedFileSizeLabel, statusLabel;
     public File selectedFile, selectedFolder, innputDir, huffDir, compresseedDir, outputDir;
-    private String basePath = new File("").getAbsolutePath() + File.separator + "assets" + File.separator;
+    private String basePath = new File("").getAbsoluteFile().getParent() + File.separator + "assets" + File.separator;
     private String inputFilePath = basePath + "inputs";
     private String huffTreeFilePath = basePath + "huff_files";
     private String compressedFilePath = basePath + "compressed_files";
